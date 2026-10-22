@@ -1,22 +1,46 @@
 {
   "name": "dsh-update-check",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
-  "description": "Checks once per Harness start whether DeepSeek Harness, the profile plugins, and the rea-agents CLI have newer versions published, then offers one-click install for profile plugins. Never installs anything without a click.",
+  "description": "Checks once per Harness start whether DeepSeek Harness, the profile plugins and the rea-agents CLI have newer versions, then updates profile plugins in one click. Never installs anything without a click.",
   "type": "module",
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
     "./locale/*.json": "./locale/*.json",
-    "./icon": "./icon.svg"
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
   },
   "files": [
     "index.js",
     "client.js",
     "cordis.patch.yml",
     "locale/*.json",
-    "icon.svg"
+    "icon.svg",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1731988818/dsh-update-check.git"
+  },
+  "bugs": {
+    "url": "https://github.com/1731988818/dsh-update-check/issues"
+  },
+  "homepage": "https://github.com/1731988818/dsh-update-check#readme",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "plugin",
+    "update",
+    "version"
+  ],
+  "license": "MIT",
+  "author": "1731988818",
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

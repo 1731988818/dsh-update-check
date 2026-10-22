@@ -1,67 +1,84 @@
 # dsh-update-check
 
-给 DeepSeek Harness 用的启动检查插件：每次打开 Harness 自动检查 DSH 本体、已装插件和 rea-agents 是否有新版本，在右下角弹提示——**只告诉你，不自动安装**。
+Startup update check for DeepSeek Harness: one check per launch, one card, one click per update.
 
-## 它检查什么
+[![license](https://img.shields.io/badge/license-MIT-0f172a)](LICENSE)
+[![DSH](https://img.shields.io/badge/DeepSeek%20Harness-0.2.1-2f6fed)](https://github.com/deepseek-ai/deepseek-harness)
 
-| 对象 | 数据来源 |
+English | [中文](README.zh.md)
+
+A community plugin for DeepSeek Harness. It reads versions and asks for the install — it never upgrades anything on its own, never mutates a profile beyond the package you clicked, and exposes nothing but version numbers over its route.
+
+## What it checks
+
+| Target | Source |
 | --- | --- |
-| DSH 本体 | 官方 `nightly.yml` 更新 feed，比对 `version` 字段 |
-| 已装插件 / bundle | 逐个查 npm registry，失败自动回退国内镜像 |
-| rea-agents | 全局安装的 CLI 版本 |
+| DeepSeek Harness itself | The running build from `resources/app.asar/dsh/package.json`, compared against the official `nightly.yml` feed |
+| Every profile bundle | `dependencies` in the running profile's `package.json`, each resolved against the npm registry |
+| The `rea-agents` CLI | The global install under `%APPDATA%\npm\node_modules\rea-agents` |
 
-## 它怎么工作
+npm lookups fall back from `registry.npmjs.org` to `registry.npmmirror.com` when the first one fails, so a blocked registry degrades one target instead of the whole check.
 
-1. Harness 启动时插件被加载，立刻发起一次检查
-2. 检查结果通过 `GET /dsh-update-check/api/status` 暴露
-3. 界面上的卡片轮询这个接口，拿到结果后显示
-4. 有更新时右下角浮出卡片，列出「包名 当前版本 → 最新版本」
-5. 插件类条目每行有「更新」按钮，底部有「全部更新」
+## What you see
 
-## 哪些能一键更新，哪些不能
+A card in the bottom-right corner, only when something is behind:
 
-- **能**：普通插件。内部走两步——先卸载再安装，因为 DSH 0.2.1 的插件管理器没有原地更新能力。
-- **不能**：`dshmarket` 这类「卸载自己会中断自身执行」的插件，以及 DSH 本体（需下载安装包）、`rea-agents`（需 `npm i -g rea-agents@latest`）。卡片会给这些标「需手动」。
+- `package  1.2.3 → 1.2.4` per outdated target, with the four newest shown and the rest counted
+- **Update** per row for profile plugins, **Update all (N)** at the bottom
+- `manual` for the three targets that cannot be updated from inside the running composition (see [Limits](#limits))
+- **Check again** and **×**, because the card is a notice, not a nag
 
-## 安装
+Nothing renders when everything is current.
 
-直接从 GitHub 装：
+## How it works
+
+1. The Host half registers `GET /dsh-update-check/api/status` and starts one check when the bundle activates.
+2. That check runs with six-way concurrency: one feed read, one npm read per bundle, one local version read for the CLI.
+3. The Client half polls the route, then renders into the `shell.overlay` slot — a frame-wide layer above every column, so the card does not belong to a session or a panel.
+4. A click on **Update** posts `{ "name": "..." }` to `/dsh-update-check/api/install`. The route accepts only names that the current check marked outdated and installable, so it cannot be used as a generic install proxy.
+5. The install itself is two steps — `installBundle`, and if the manager answers `already-installed` (DSH 0.2.1 treats `add` on an existing dependency that way, issue #896), `removeBundle` followed by `installBundle` again. That is the same shape the official Plugins page uses, because this manager has no in-place update.
+6. When the install settles, the check runs once more and the card reflects the new versions.
+
+## Limits
+
+- **`dshmarket` and other markets cannot update themselves.** Removing the bundle unloads the code that would run the reinstall (issue #900), so those rows stay `manual` with the command to run.
+- **DeepSeek Harness itself** is a 289 MB desktop build behind the nightly feed; the card reports the newer version and leaves the download to you.
+- **`rea-agents`** is a global npm install, not a profile dependency: `npm i -g rea-agents@latest`.
+- A version is only compared, never assumed: a target with no readable current version, or a registry that answers nothing, is reported `unknown` instead of being called up to date.
+
+## Install
+
+From GitHub, through the plugin manager tool:
 
 ```
 plugin_manager install_bundle github:1731988818/dsh-update-check
 ```
 
-等价的命令行方式：
+Or with the CLI:
 
 ```bash
 dsh plugin --profile <profile> add github:1731988818/dsh-update-check
 ```
 
-本地开发时也可以打包成 tgz 再装：
+`pnpm` caches git dependencies by commit hash, so re-run the same command after a push to pick up new code.
 
-```bash
-npm pack
-```
+## Route
 
-```
-plugin_manager install_bundle <tgz 绝对路径>
-```
-
-## 改它自己
-
-改完源码推上去：
-
-```bash
-git add -A && git commit -m "改了什么" && git push
-```
-
-然后重新 `install_bundle github:1731988818/dsh-update-check` —— pnpm 按 commit hash 缓存 git 依赖，不重新装拿不到新代码。
-
-已装插件的替换由 DSH 的 HMR 接管，**不需要重启 Harness**。
-
-## 接口
-
-| 方法 | 路径 | 说明 |
+| Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/dsh-update-check/api/status` | 检查结果快照，支持 `?refresh=1` 强制重查 |
-| `POST` | `/dsh-update-check/api/install` | body `{ "name": "包名" }`，只接受本次检查判定为过期的插件 |
+| `GET` | `/dsh-update-check/api/status` | Snapshot of the last check. `?refresh=1` forces a new one. |
+| `POST` | `/dsh-update-check/api/install` | Body `{ "name": "package-name" }`. Only accepts an outdated, installable plugin from the current check. |
+
+The route returns version numbers and package names only. It reads no files from the request and installs nothing that the card did not offer.
+
+## Uninstall
+
+```bash
+dsh plugin --profile <profile> remove dsh-update-check
+```
+
+Nothing is left behind: the plugin writes no files, keeps no state between launches, and its route disappears with the bundle.
+
+## License
+
+[MIT](LICENSE)
