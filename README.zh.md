@@ -30,6 +30,8 @@ npm 查询在 `registry.npmjs.org` 失败时自动回退到 `registry.npmmirror.
 
 全部是最新版时什么都不渲染。
 
+每次启动只提示一次。这张卡片由 Host 发一次「可以弹」的许可，页面读到的那一刻就用掉了——所以关掉它、切换页面、刷新页面都不会再弹。重新打开 Harness 时它才会带着一次新的检查结果再出现一次。
+
 ## 怎么工作
 
 1. Host 侧注册 `GET /dsh-update-check/api/status`，bundle 激活时发起一次检查。

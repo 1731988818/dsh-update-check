@@ -1,6 +1,6 @@
 {
   "name": "dsh-update-check",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "private": true,
   "description": "Checks once per Harness start whether DeepSeek Harness, the profile plugins and the rea-agents CLI have newer versions, then updates profile plugins in one click. Never installs anything without a click.",
   "type": "module",

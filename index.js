@@ -64,6 +64,14 @@ let inFlight = null
 /** Plugin name whose install is running right now, or null. */
 let installingName = null
 
+/**
+ * Whether this process has already offered the card. The Client half unmounts
+ * on every page load, so its own dismissal state cannot span a reload; this
+ * flag lives in the Host, which lasts as long as the running application does.
+ * One card per application start, not one per page load.
+ */
+let announced = false
+
 function now() {
   return new Date().toISOString()
 }
@@ -280,6 +288,7 @@ function snapshot() {
   const outdatedItems = state.items.filter((item) => item.status === 'outdated')
   const dshOutdated = state.dsh?.status === 'outdated'
   const unknownItems = state.items.filter((item) => item.status === 'unknown')
+  const outdatedCount = outdatedItems.length + (dshOutdated ? 1 : 0)
 
   return {
     schema: 'dsh-update-check/v1',
@@ -297,6 +306,8 @@ function snapshot() {
       installable: outdatedItems.filter((item) => item.kind === 'plugin' && item.installable !== false).length,
     },
     installing: installingName,
+    // Read once per process by the Client half; a reload must not raise the card again.
+    notify: state.done && outdatedCount > 0 && !announced,
     pollAfterMs: state.done ? null : 2000,
     maxRetryPolls: MAX_RETRY_POLLS,
   }
@@ -389,11 +400,14 @@ function handleRequest(request, response) {
   const url = new URL(request.url ?? ROUTE_PATH, 'http://127.0.0.1')
   if (url.searchParams.get('refresh') === '1') void startCheck(true)
 
+  const body = snapshot()
+  if (body.notify) announced = true
+
   response.writeHead(200, {
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
   })
-  response.end(JSON.stringify(snapshot()))
+  response.end(JSON.stringify(body))
 }
 
 /**

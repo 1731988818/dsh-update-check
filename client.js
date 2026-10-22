@@ -232,6 +232,7 @@ window.__ModuleLoader__.load({
     function UpdateNotice() {
       const [data, setData] = useState(null)
       const [attempt, setAttempt] = useState(0)
+      const [announced, setAnnounced] = useState(false)
       const [dismissed, setDismissed] = useState(false)
       const [expanded, setExpanded] = useState(false)
       const [installing, setInstalling] = useState(null)
@@ -251,6 +252,9 @@ window.__ModuleLoader__.load({
             if (cancelled) return
 
             setData(body)
+            // The Host hands this out once per application start. Keep it locally
+            // so the card survives later polls, which are answered with `false`.
+            if (body.notify === true) setAnnounced(true)
 
             const retryLimit = typeof body.maxRetryPolls === 'number' ? body.maxRetryPolls : 30
             if (!body.done && attempt < retryLimit) {
@@ -329,7 +333,7 @@ window.__ModuleLoader__.load({
         }
       }
 
-      if (dismissed || !data || !data.done || outdated.length === 0) return null
+      if (dismissed || !announced || !data || !data.done || outdated.length === 0) return null
 
       const visible = expanded ? outdated : outdated.slice(0, 4)
       const remaining = outdated.length - visible.length

@@ -30,6 +30,8 @@ A card in the bottom-right corner, only when something is behind:
 
 Nothing renders when everything is current.
 
+One card per application start. The banner is offered once, by the Host, and that offer is spent the moment the page reads it — so dismissing it, navigating, or reloading the page keeps it quiet. Start Harness again and it comes back once, with a fresh check.
+
 ## How it works
 
 1. The Host half registers `GET /dsh-update-check/api/status` and starts one check when the bundle activates.
