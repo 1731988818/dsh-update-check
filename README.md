@@ -25,13 +25,23 @@
 
 ## 安装
 
-打包：
+直接从 GitHub 装：
+
+```
+plugin_manager install_bundle github:1731988818/dsh-update-check
+```
+
+等价的命令行方式：
+
+```bash
+dsh plugin --profile <profile> add github:1731988818/dsh-update-check
+```
+
+本地开发时也可以打包成 tgz 再装：
 
 ```bash
 npm pack
 ```
-
-把生成的 `.tgz` 交给 DSH 装：
 
 ```
 plugin_manager install_bundle <tgz 绝对路径>
@@ -39,7 +49,13 @@ plugin_manager install_bundle <tgz 绝对路径>
 
 ## 改它自己
 
-改完源码后：改 `package.json` 的 `version` → `npm pack` → 重新 `install_bundle`。
+改完源码推上去：
+
+```bash
+git add -A && git commit -m "改了什么" && git push
+```
+
+然后重新 `install_bundle github:1731988818/dsh-update-check` —— pnpm 按 commit hash 缓存 git 依赖，不重新装拿不到新代码。
 
 已装插件的替换由 DSH 的 HMR 接管，**不需要重启 Harness**。
 
