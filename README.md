@@ -33,7 +33,7 @@ A card in the bottom-right corner, only when something is behind:
 - one row per outdated target — `package  1.2.3 → 1.2.4`, four rows shown, the rest collapsed into a count
 - **更新** on rows that can be installed from here, **全部更新** in the footer to do them in one go
 - **需手动** on rows that cannot — the app itself, the CLI, and plugin markets (see [Limits](#limits))
-- **重新检查** to run the check again, **×** to dismiss
+- **重新检查** to run the check again, **×** to dismiss. Leave it untouched and it closes itself after 15 seconds — hovering pauses that countdown, and an install in progress holds it open
 
 Nothing renders when everything is current.
 

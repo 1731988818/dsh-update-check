@@ -10,6 +10,9 @@ window.__ModuleLoader__.load({
 
     const ROUTE = '/dsh-update-check/api/status'
     const INSTALL_ROUTE = '/dsh-update-check/api/install'
+    // The card is a notification, not a panel: leave it alone and it closes itself.
+    // Hovering, or an install in flight, keeps it on screen.
+    const AUTO_DISMISS_MS = 15000
 
     const mutedColor = 'var(--dsw-alias-label-secondary, #6b7280)'
     const successColor = 'var(--dsw-alias-state-success-primary, #16a34a)'
@@ -231,6 +234,7 @@ window.__ModuleLoader__.load({
       const [expanded, setExpanded] = useState(false)
       const [installing, setInstalling] = useState(null)
       const [outcomes, setOutcomes] = useState({})
+      const [hovered, setHovered] = useState(false)
 
       useEffect(() => {
         if (dismissed) return undefined
@@ -273,6 +277,12 @@ window.__ModuleLoader__.load({
           if (timer) clearTimeout(timer)
         }
       }, [attempt, dismissed])
+
+      useEffect(() => {
+        if (!announced || dismissed || hovered || installing !== null) return undefined
+        const timer = setTimeout(() => setDismissed(true), AUTO_DISMISS_MS)
+        return () => clearTimeout(timer)
+      }, [announced, dismissed, hovered, installing])
 
       const outdated = useMemo(() => {
         const list = []
@@ -336,7 +346,12 @@ window.__ModuleLoader__.load({
 
       return h(
         'div',
-        { style: cardStyle, role: 'status' },
+        {
+          style: cardStyle,
+          role: 'status',
+          onMouseEnter: () => setHovered(true),
+          onMouseLeave: () => setHovered(false),
+        },
         h(
           'div',
           { style: headerStyle },

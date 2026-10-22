@@ -2,6 +2,10 @@
 
 Versions follow the git history of this repository. Every release is a tag on `master`.
 
+## 1.5.3
+
+- The card closes itself after 15 seconds if you leave it alone. Hovering pauses the countdown, and an install in flight keeps it open until the install settles.
+
 ## 1.5.2
 
 - README rewritten in both languages around what the plugin refuses to do as much as what it does.

@@ -1,6 +1,6 @@
 {
   "name": "dsh-update-check",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "private": true,
   "description": "One update check per DeepSeek Harness launch: reports newer app, plugin and CLI versions, and updates profile plugins on click.",
   "type": "module",
