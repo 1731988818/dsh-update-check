@@ -48,19 +48,17 @@ Nothing renders when everything is current.
 
 ## Install
 
-From GitHub, through the plugin manager tool:
-
-```
-plugin_manager install_bundle github:1731988818/dsh-update-check
-```
-
-Or with the CLI:
-
 ```bash
 dsh plugin --profile <profile> add github:1731988818/dsh-update-check
 ```
 
 `pnpm` caches git dependencies by commit hash, so re-run the same command after a push to pick up new code.
+
+Inside a running session the same install is one tool call:
+
+```
+plugin_manager install_bundle github:1731988818/dsh-update-check
+```
 
 ## Route
 

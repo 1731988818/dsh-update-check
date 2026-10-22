@@ -48,19 +48,17 @@ npm 查询在 `registry.npmjs.org` 失败时自动回退到 `registry.npmmirror.
 
 ## 安装
 
-通过插件管理器工具从 GitHub 装：
-
-```
-plugin_manager install_bundle github:1731988818/dsh-update-check
-```
-
-或命令行：
-
 ```bash
 dsh plugin --profile <profile> add github:1731988818/dsh-update-check
 ```
 
 `pnpm` 按 commit hash 缓存 git 依赖，推了新代码要重跑同一条命令才会拿到。
+
+在会话内，同一条安装也能用一次工具调用完成：
+
+```
+plugin_manager install_bundle github:1731988818/dsh-update-check
+```
 
 ## 路由
 
