@@ -1,8 +1,8 @@
 {
   "name": "dsh-update-check",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "private": true,
-  "description": "Checks once per Harness start whether DeepSeek Harness, the profile plugins and the rea-agents CLI have newer versions, then updates profile plugins in one click. Never installs anything without a click.",
+  "description": "One update check per DeepSeek Harness launch: reports newer app, plugin and CLI versions, and updates profile plugins on click.",
   "type": "module",
   "exports": {
     ".": "./index.js",
@@ -18,8 +18,10 @@
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
+    "assets/*",
     "README.md",
     "README.zh.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "repository": {
@@ -37,6 +39,7 @@
     "cordis",
     "plugin",
     "update",
+    "upgrade",
     "version"
   ],
   "license": "MIT",

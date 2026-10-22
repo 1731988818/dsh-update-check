@@ -1,51 +1,32 @@
 /**
- * dsh-update-check — Host half.
+ * Host half: one version check per launch, exposed over same-origin JSON.
  *
- * Runs one version check each time Harness starts and exposes the result over
- * same-origin JSON routes so the Client half can show it and act on it.
- *
- * Detection is read-only. Installation only ever happens after the user presses
- * a button, and only for a plugin this check already reported as outdated: the
- * route refuses any name it did not itself observe, so it cannot be turned into
- * an arbitrary `installBundle` proxy.
- *
- * Sources of truth:
- *   - DeepSeek Harness itself: the electron-updater feed this install is
- *     configured against (resources/app-update.yml -> provider generic).
- *   - Profile plugins: the public npm registry for each dependency name in the
- *     profile's package.json, compared against the version actually on disk.
- *   - rea-agents CLI: the public npm registry, compared against the globally
- *     installed copy that `npx rea-agents setup` wires into Harness.
+ * Detection is read-only. Installing only runs after a click, and only for a
+ * plugin this check already found outdated, so the route cannot double as a
+ * general `installBundle` proxy.
  */
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 
-/** Same-origin JSON route the Client half polls. */
 const ROUTE_PATH = '/dsh-update-check/api/status'
-
-/** Same-origin JSON route the Client half posts one install request to. */
 const INSTALL_ROUTE_PATH = '/dsh-update-check/api/install'
 
-/** Mirrors the feed configured in D:\deepseek\resources\app-update.yml (channel: nightly). */
+// Same feed the desktop build's electron-updater reads (resources/app-update.yml).
 const DSH_FEED_URL = 'https://download.deepseek.com/dsh-desk/feeds/win-x64/nightly.yml'
 
-/** Primary registry first, then the CN mirror as a fallback. */
 const NPM_REGISTRIES = ['https://registry.npmjs.org', 'https://registry.npmmirror.com']
 
 const FETCH_TIMEOUT_MS = 10_000
 const MAX_CONCURRENCY = 6
 const MAX_RETRY_POLLS = 60
 
-/** This bundle's own package name; it must not report itself as an update target. */
 const SELF_NAME = 'dsh-update-check'
 
-/**
- * The plugin market cannot be reinstalled this way: removing it first drops the
- * market UI from the running composition, and its own docs record the profile
- * being left with the bundle row gone (#900). Left to a manual, app-quit update.
- */
+// A market cannot be reinstalled this way: removing it first drops the market
+// UI from the running composition, and its own docs record the bundle row being
+// left behind (#900). Left to a manual update with the app closed.
 const MARKET_NAMES = new Set(['dshmarket', 'dsh-market'])
 
 const state = {
@@ -58,18 +39,12 @@ const state = {
   items: [],
 }
 
-/** @type {Promise<void> | null} */
 let inFlight = null
 
-/** Plugin name whose install is running right now, or null. */
 let installingName = null
 
-/**
- * Whether this process has already offered the card. The Client half unmounts
- * on every page load, so its own dismissal state cannot span a reload; this
- * flag lives in the Host, which lasts as long as the running application does.
- * One card per application start, not one per page load.
- */
+// The Client unmounts on every page load, so its dismissal state cannot span a
+// reload. This lives in the Host instead: one card per application start.
 let announced = false
 
 function now() {
@@ -327,16 +302,13 @@ function registryNameOf(spec) {
 }
 
 /**
- * Install a spec, and when the manager refuses it because that package is
- * already declared in the profile, remove the installed copy first and install
- * again.
+ * Install a spec, and when the manager refuses with `already-installed` because
+ * the package is already declared, remove it and install again.
  *
- * dsh 0.2.1's plugin manager has no in-place update: `add` on an existing
- * dependency answers `already-installed` outright (#896), and an update is
- * exactly that shape. The market's desktop bridge updates a bundle the same two
- * steps. Removing unloads the bundle from the running composition first, so a
- * failed reinstall leaves that plugin missing; the caller reports that rather
- * than pretending it worked.
+ * dsh 0.2.1 has no in-place update: `add` on an existing dependency answers
+ * `already-installed` outright (#896), and an update is exactly that shape. The
+ * removal unloads the bundle first, so a failed reinstall leaves it missing —
+ * the caller reports that instead of pretending it worked.
  */
 async function installOrReinstall(manager, spec) {
   const install = () => manager.installBundle(spec)

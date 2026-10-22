@@ -1,12 +1,6 @@
-/**
- * dsh-update-check — Client half.
- *
- * Reads the Host snapshot from the same-origin route and, when anything is
- * behind, shows a small dismissible card in the frame-wide overlay. Profile
- * plugins get an inline install button that posts back to the Host route; the
- * Harness build and the rea-agents CLI are shown as manual, because neither can
- * be replaced from inside the running profile.
- */
+// Client half: reads the Host snapshot and renders the card into the frame-wide
+// overlay. Plugins get an in-place install button; targets that cannot be
+// replaced from here (the app, the CLI, markets) are shown as manual.
 window.__ModuleLoader__.load({
   id: 'dsh-update-check',
   factory(require) {
