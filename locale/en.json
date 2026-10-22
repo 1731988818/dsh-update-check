@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Update Check",
+    "description": "Checks once each time Harness starts whether DeepSeek Harness itself, the plugins installed in this profile, and the rea-agents CLI have newer versions. It only reports what it finds and never installs an update."
+  }
+}

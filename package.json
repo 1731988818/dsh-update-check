@@ -1,0 +1,33 @@
+{
+  "name": "dsh-update-check",
+  "version": "1.4.0",
+  "private": true,
+  "description": "Checks once per Harness start whether DeepSeek Harness, the profile plugins, and the rea-agents CLI have newer versions published, then offers one-click install for profile plugins. Never installs anything without a click.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-theme"
+      ]
+    }
+  }
+}

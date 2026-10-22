@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "更新检查",
+    "description": "每次启动 Harness 时检查一次：DeepSeek Harness 本体、本 profile 里安装的插件、以及 rea-agents 命令行工具是否有新版本。只报告结果，不会自动安装任何更新。"
+  }
+}
